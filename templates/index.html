@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Hypervisor Agent - Learn Cloud Infrastructure{% endblock %}
+
+{% block content %}
+<div class="hero-section bg-primary text-white rounded p-5 mb-5">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h1 class="display-4">Hypervisor Agent</h1>
+            <p class="lead">Your AI-powered assistant for cloud infrastructure, hypervisors, and Infrastructure as Code across AWS, Azure, and Google Cloud Platform.</p>
+            <a href="{{ url_for('query_agent') }}" class="btn btn-light btn-lg">Start Learning <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="col-md-4 text-center">
+            <i class="fas fa-cloud fa-5x"></i>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-question-circle text-primary"></i> Ask Questions</h5>
+                <p class="card-text">Get instant help with cloud infrastructure questions. The agent provides recommendations and code examples.</p>
+                <a href="{{ url_for('query_agent') }}" class="btn btn-primary">Try It Now</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-code text-success"></i> Generate Code</h5>
+                <p class="card-text">Create Terraform configurations, SDK examples, and Infrastructure as Code for any cloud provider.</p>
+                <a href="{{ url_for('terraform_page') }}" class="btn btn-success">Generate Terraform</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-lightbulb text-warning"></i> Best Practices</h5>
+                <p class="card-text">Learn industry best practices for security, performance, cost optimization, and reliability.</p>
+                <a href="{{ url_for('best_practices') }}" class="btn btn-warning">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-6">
+        <h3>Supported Cloud Providers</h3>
+        <div class="row">
+            {% for provider_key, provider in cloud_providers.items() %}
+            <div class="col-12 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            {% if provider_key == 'aws' %}
+                                <i class="fab fa-aws text-warning"></i>
+                            {% elif provider_key == 'azure' %}
+                                <i class="fab fa-microsoft text-primary"></i>
+                            {% elif provider_key == 'gcp' %}
+                                <i class="fab fa-google text-danger"></i>
+                            {% endif %}
+                            {{ provider.name }}
+                        </h6>
+                        <p class="card-text small">{{ provider.services[:4] | join(', ') }}{% if provider.services|length > 4 %}...{% endif %}</p>
+                        <a href="{{ url_for(provider_key + '_page') }}" class="btn btn-sm btn-outline-primary">Explore</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <h3>Help Categories</h3>
+        <div class="list-group">
+            {% for category in help_categories %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                {{ category }}
+                <span class="badge bg-primary rounded-pill">
+                    <i class="fas fa-info-circle"></i>
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <h3>Supported Hypervisors</h3>
+        <div class="row">
+            {% for hyp_name, hyp_info in hypervisors.items() %}
+            <div class="col-md-4 mb-3">
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title text-uppercase">{{ hyp_name }}</h6>
+                        <p class="card-text small">{{ hyp_info.products[:2] | join(', ') }}{% if hyp_info.products|length > 2 %}...{% endif %}</p>
+                        <small class="text-muted">Tools: {{ hyp_info.tools[:2] | join(', ') }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h4>Ready to Get Started?</h4>
+                <p>Ask your first question or generate some code to see the agent in action!</p>
+                <div class="btn-group" role="group">
+                    <a href="{{ url_for('query_agent') }}" class="btn btn-primary">Ask a Question</a>
+                    <a href="{{ url_for('terraform_page') }}" class="btn btn-success">Generate Terraform</a>
+                    <a href="{{ url_for('sdk_examples') }}" class="btn btn-info">SDK Examples</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}SDK Examples{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-code"></i> SDK Code Examples</h4>
+                <p class="mb-0">Generate cloud SDK examples for AWS boto3, Azure SDK, and Google Cloud SDK</p>
+            </div>
+            <div class="card-body">
+                <form id="sdkForm">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="provider" class="form-label">Cloud Provider</label>
+                            <select class="form-select" id="provider" name="provider" required>
+                                <option value="">Select Provider</option>
+                                <option value="aws">AWS (boto3)</option>
+                                <option value="azure">Azure SDK</option>
+                                <option value="gcp">Google Cloud SDK</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="service" class="form-label">Service</label>
+                            <select class="form-select" id="service" name="service" required>
+                                <option value="">Select Service</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="operation" class="form-label">Operation</label>
+                            <select class="form-select" id="operation" name="operation" required>
+                                <option value="">Select Operation</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-code"></i> Generate SDK Example
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="loadingDiv" class="text-center mt-4" style="display: none;">
+            <div class="spinner-border text-info" role="status">
+                <span class="visually-hidden">Generating...</span>
+            </div>
+            <p class="mt-2">Generating SDK example...</p>
+        </div>
+        
+        <div id="resultsDiv" class="mt-4" style="display: none;">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-file-code"></i> Generated SDK Code</h5>
+                    <button class="btn btn-sm btn-outline-primary" onclick="copyToClipboard()">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <div class="card-body">
+                    <pre><code id="generatedCode" class="language-python"></code></pre>
+                </div>
+            </div>
+        </div>
+        
+        <div id="errorDiv" class="alert alert-danger mt-4" style="display: none;">
+            <h6><i class="fas fa-exclamation-triangle"></i> Error</h6>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5>Popular SDK Examples</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6><i class="fab fa-aws text-warning"></i> AWS boto3</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="sdk-example" data-provider="aws" data-service="ec2" data-operation="list_instances">List EC2 Instances</a></li>
+                            <li><a href="#" class="sdk-example" data-provider="aws" data-service="s3" data-operation="upload_file">Upload S3 File</a></li>
+                            <li><a href="#" class="sdk-example" data-provider="aws" data-service="s3" data-operation="list_objects">List S3 Objects</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fab fa-microsoft text-primary"></i> Azure SDK</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="sdk-example" data-provider="azure" data-service="compute" data-operation="list_vms">List Virtual Machines</a></li>
+                            <li><a href="#" class="sdk-example" data-provider="azure" data-service="storage" data-operation="upload_blob">Upload Blob</a></li>
+                            <li><a href="#" class="sdk-example" data-provider="azure" data-service="storage" data-operation="list_blobs">List Blobs</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6><i class="fab fa-google text-danger"></i> Google Cloud SDK</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="sdk-example" data-provider="gcp" data-service="compute" data-operation="list_instances">List Compute Instances</a></li>
+                            <li><a href="#" class="sdk-example" data-provider="gcp" data-service="storage" data-operation="upload_blob">Upload Storage Object</a></li>
+                            <li><a href="#" class="sdk-example" data-provider="gcp" data-service="storage" data-operation="list_blobs">List Storage Objects</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const serviceOperations = {
+    aws: {
+        ec2: ['list_instances', 'create_instance'],
+        s3: ['upload_file', 'list_objects', 'download_file']
+    },
+    azure: {
+        compute: ['list_vms', 'create_vm'],
+        storage: ['upload_blob', 'list_blobs', 'download_blob']
+    },
+    gcp: {
+        compute: ['list_instances', 'create_instance'],
+        storage: ['upload_blob', 'list_blobs', 'download_blob']
+    }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const providerSelect = document.getElementById('provider');
+    const serviceSelect = document.getElementById('service');
+    const operationSelect = document.getElementById('operation');
+    const form = document.getElementById('sdkForm');
+    
+    providerSelect.addEventListener('change', function() {
+        const provider = this.value;
+        serviceSelect.innerHTML = '<option value="">Select Service</option>';
+        operationSelect.innerHTML = '<option value="">Select Operation</option>';
+        
+        if (provider && serviceOperations[provider]) {
+            Object.keys(serviceOperations[provider]).forEach(service => {
+                const option = document.createElement('option');
+                option.value = service;
+                option.textContent = service.toUpperCase();
+                serviceSelect.appendChild(option);
+            });
+        }
+    });
+    
+    serviceSelect.addEventListener('change', function() {
+        const provider = providerSelect.value;
+        const service = this.value;
+        operationSelect.innerHTML = '<option value="">Select Operation</option>';
+        
+        if (provider && service && serviceOperations[provider][service]) {
+            serviceOperations[provider][service].forEach(operation => {
+                const option = document.createElement('option');
+                option.value = operation;
+                option.textContent = operation.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+                operationSelect.appendChild(option);
+            });
+        }
+    });
+    
+    // Handle SDK examples
+    document.querySelectorAll('.sdk-example').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const provider = this.dataset.provider;
+            const service = this.dataset.service;
+            const operation = this.dataset.operation;
+            
+            providerSelect.value = provider;
+            providerSelect.dispatchEvent(new Event('change'));
+            
+            setTimeout(() => {
+                serviceSelect.value = service;
+                serviceSelect.dispatchEvent(new Event('change'));
+                
+                setTimeout(() => {
+                    operationSelect.value = operation;
+                }, 100);
+            }, 100);
+        });
+    });
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        generateSDK();
+    });
+});
+
+function generateSDK() {
+    const formData = new FormData(document.getElementById('sdkForm'));
+    const loadingDiv = document.getElementById('loadingDiv');
+    const resultsDiv = document.getElementById('resultsDiv');
+    const errorDiv = document.getElementById('errorDiv');
+    
+    loadingDiv.style.display = 'block';
+    resultsDiv.style.display = 'none';
+    errorDiv.style.display = 'none';
+    
+    fetch('/generate_sdk', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingDiv.style.display = 'none';
+        
+        if (data.error) {
+            document.getElementById('errorMessage').textContent = data.error;
+            errorDiv.style.display = 'block';
+        } else {
+            document.getElementById('generatedCode').textContent = data.code;
+            if (typeof Prism !== 'undefined') {
+                Prism.highlightAll();
+            }
+            resultsDiv.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        loadingDiv.style.display = 'none';
+        document.getElementById('errorMessage').textContent = 'Request failed: ' + error.message;
+        errorDiv.style.display = 'block';
+    });
+}
+
+function copyToClipboard() {
+    const code = document.getElementById('generatedCode').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+        }, 2000);
+    });
+}
+</script>
+{% endblock %}

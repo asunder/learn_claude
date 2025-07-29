@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Hypervisors{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-desktop"></i> Hypervisor Management</h4>
+                <p class="mb-0">Learn about different hypervisor technologies and their management tools</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    {% for hyp_name, hyp_info in hypervisors.items() %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5>
+                    {% if hyp_name == 'vmware' %}
+                        <i class="fas fa-cube text-primary"></i>
+                    {% elif hyp_name == 'hyper-v' %}
+                        <i class="fab fa-microsoft text-info"></i>
+                    {% elif hyp_name == 'kvm' %}
+                        <i class="fab fa-linux text-warning"></i>
+                    {% endif %}
+                    {{ hyp_name.upper().replace('-', ' ') }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6><i class="fas fa-box"></i> Products</h6>
+                    <ul class="list-unstyled">
+                        {% for product in hyp_info.products %}
+                        <li><i class="fas fa-check text-success me-2"></i>{{ product }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-plug"></i> APIs</h6>
+                    <ul class="list-unstyled">
+                        {% for api in hyp_info.apis %}
+                        <li><i class="fas fa-code text-info me-2"></i>{{ api }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-tools"></i> Management Tools</h6>
+                    <ul class="list-unstyled">
+                        {% for tool in hyp_info.tools %}
+                        <li><i class="fas fa-wrench text-warning me-2"></i>{{ tool }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb"></i> Common Hypervisor Tasks</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Virtual Machine Management</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-play text-success me-2"></i>
+                                Start/Stop Virtual Machines
+                            </li>
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-clone text-info me-2"></i>
+                                Clone and Template Creation
+                            </li>
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-camera text-warning me-2"></i>
+                                Snapshot Management
+                            </li>
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-arrows-alt text-primary me-2"></i>
+                                Resource Allocation
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Infrastructure Management</h6>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-network-wired text-success me-2"></i>
+                                Network Configuration
+                            </li>
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-hdd text-info me-2"></i>
+                                Storage Management
+                            </li>
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-chart-line text-warning me-2"></i>
+                                Performance Monitoring
+                            </li>
+                            <li class="list-group-item border-0 px-0">
+                                <i class="fas fa-shield-alt text-danger me-2"></i>
+                                Security Configuration
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-cube fa-3x mb-3"></i>
+                <h5>VMware vSphere</h5>
+                <p>Enterprise virtualization platform with advanced features for large-scale deployments.</p>
+                <button class="btn btn-light" onclick="showHypervisorDetails('vmware')">Learn More</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <i class="fab fa-microsoft fa-3x mb-3"></i>
+                <h5>Microsoft Hyper-V</h5>
+                <p>Windows-based hypervisor integrated with Windows Server and System Center.</p>
+                <button class="btn btn-light" onclick="showHypervisorDetails('hyper-v')">Learn More</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-dark">
+            <div class="card-body text-center">
+                <i class="fab fa-linux fa-3x mb-3"></i>
+                <h5>KVM/QEMU</h5>
+                <p>Open-source virtualization solution built into the Linux kernel.</p>
+                <button class="btn btn-dark" onclick="showHypervisorDetails('kvm')">Learn More</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for hypervisor details -->
+<div class="modal fade" id="hypervisorModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be loaded dynamically -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const hypervisorDetails = {
+    vmware: {
+        title: 'VMware vSphere',
+        content: `
+            <div class="row">
+                <div class="col-12">
+                    <h6>Key Features</h6>
+                    <ul>
+                        <li>High availability and fault tolerance</li>
+                        <li>vMotion for live migration</li>
+                        <li>Distributed Resource Scheduler (DRS)</li>
+                        <li>Storage vMotion</li>
+                        <li>VMware HA for automatic failover</li>
+                    </ul>
+                    
+                    <h6>Common PowerCLI Commands</h6>
+                    <pre><code class="language-powershell">
+# Connect to vCenter
+Connect-VIServer -Server vcenter.example.com
+
+# Get all VMs
+Get-VM
+
+# Start a VM
+Start-VM -VM "MyVM"
+
+# Create a snapshot
+New-Snapshot -VM "MyVM" -Name "Backup-$(Get-Date -Format 'yyyy-MM-dd')"
+
+# Get VM performance data
+Get-Stat -Entity "MyVM" -Stat cpu.usage.average
+                    </code></pre>
+                    
+                    <h6>Best Practices</h6>
+                    <ul>
+                        <li>Regular backup and snapshot management</li>
+                        <li>Monitor resource utilization</li>
+                        <li>Use resource pools for organization</li>
+                        <li>Implement proper security hardening</li>
+                    </ul>
+                </div>
+            </div>
+        `
+    },
+    'hyper-v': {
+        title: 'Microsoft Hyper-V',
+        content: `
+            <div class="row">
+                <div class="col-12">
+                    <h6>Key Features</h6>
+                    <ul>
+                        <li>Integration with Windows ecosystem</li>
+                        <li>Live migration capabilities</li>
+                        <li>Hyper-V Replica for disaster recovery</li>
+                        <li>Cluster Shared Volumes (CSV)</li>
+                        <li>Generation 2 VMs with UEFI support</li>
+                    </ul>
+                    
+                    <h6>Common PowerShell Commands</h6>
+                    <pre><code class="language-powershell">
+# Get all VMs
+Get-VM
+
+# Start a VM
+Start-VM -Name "MyVM"
+
+# Create a new VM
+New-VM -Name "NewVM" -MemoryStartupBytes 2GB -Path "C:\\VMs\\"
+
+# Create a checkpoint (snapshot)
+Checkpoint-VM -Name "MyVM" -SnapshotName "Before Update"
+
+# Get VM network adapters
+Get-VMNetworkAdapter -VMName "MyVM"
+                    </code></pre>
+                    
+                    <h6>Best Practices</h6>
+                    <ul>
+                        <li>Use dynamic memory for efficiency</li>
+                        <li>Regular checkpoint cleanup</li>
+                        <li>Configure proper storage layout</li>
+                        <li>Implement security features like Shielded VMs</li>
+                    </ul>
+                </div>
+            </div>
+        `
+    },
+    kvm: {
+        title: 'KVM/QEMU',
+        content: `
+            <div class="row">
+                <div class="col-12">
+                    <h6>Key Features</h6>
+                    <ul>
+                        <li>Open-source and cost-effective</li>
+                        <li>Built into Linux kernel</li>
+                        <li>Support for various guest operating systems</li>
+                        <li>Hardware-assisted virtualization</li>
+                        <li>NUMA topology support</li>
+                    </ul>
+                    
+                    <h6>Common virsh Commands</h6>
+                    <pre><code class="language-bash">
+# List all VMs
+virsh list --all
+
+# Start a VM
+virsh start myvm
+
+# Create a snapshot
+virsh snapshot-create-as --domain myvm --name "backup-$(date +%Y%m%d)"
+
+# Show VM info
+virsh dominfo myvm
+
+# Connect to VM console
+virsh console myvm
+                    </code></pre>
+                    
+                    <h6>Best Practices</h6>
+                    <ul>
+                        <li>Use libvirt for management</li>
+                        <li>Configure CPU pinning for performance</li>
+                        <li>Use appropriate storage backends</li>
+                        <li>Monitor host resource utilization</li>
+                    </ul>
+                </div>
+            </div>
+        `
+    }
+};
+
+function showHypervisorDetails(hypervisor) {
+    const details = hypervisorDetails[hypervisor];
+    if (!details) return;
+    
+    document.getElementById('modalTitle').textContent = details.title;
+    document.getElementById('modalBody').innerHTML = details.content;
+    
+    const modal = new bootstrap.Modal(document.getElementById('hypervisorModal'));
+    modal.show();
+    
+    // Highlight code after modal is shown
+    setTimeout(() => {
+        if (typeof Prism !== 'undefined') {
+            Prism.highlightAll();
+        }
+    }, 300);
+}
+</script>
+{% endblock %}

@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}Best Practices{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-star"></i> Cloud Infrastructure Best Practices</h4>
+                <p class="mb-0">Industry-standard best practices for security, performance, cost optimization, and reliability</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    {% for category, items in practices.items() %}
+    <div class="col-md-6 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5>
+                    {% if category == 'security' %}
+                        <i class="fas fa-shield-alt text-danger"></i> Security
+                    {% elif category == 'performance' %}
+                        <i class="fas fa-tachometer-alt text-success"></i> Performance
+                    {% elif category == 'cost_optimization' %}
+                        <i class="fas fa-dollar-sign text-warning"></i> Cost Optimization
+                    {% elif category == 'reliability' %}
+                        <i class="fas fa-check-circle text-info"></i> Reliability
+                    {% endif %}
+                    {{ category.replace('_', ' ').title() }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for item in items %}
+                    <li class="list-group-item border-0 px-0">
+                        <i class="fas fa-check text-success me-2"></i>
+                        {{ item }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-lightbulb"></i> Use Case Recommendations</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-primary w-100" onclick="loadRecommendations('web_application')">
+                            <i class="fas fa-globe"></i><br>Web Application
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-success w-100" onclick="loadRecommendations('api_backend')">
+                            <i class="fas fa-server"></i><br>API Backend
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-info w-100" onclick="loadRecommendations('data_processing')">
+                            <i class="fas fa-database"></i><br>Data Processing
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <button class="btn btn-outline-warning w-100" onclick="loadRecommendations('machine_learning')">
+                            <i class="fas fa-brain"></i><br>Machine Learning
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="recommendationsDiv" class="mt-4" style="display: none;">
+                    <h6 id="recommendationsTitle"></h6>
+                    <div class="row" id="recommendationsContent">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5><i class="fas fa-book"></i> Additional Resources</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6>AWS Resources</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none">AWS Well-Architected Framework</a></li>
+                            <li><a href="#" class="text-decoration-none">AWS Security Best Practices</a></li>
+                            <li><a href="#" class="text-decoration-none">AWS Cost Optimization</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Azure Resources</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none">Azure Architecture Center</a></li>
+                            <li><a href="#" class="text-decoration-none">Azure Security Center</a></li>
+                            <li><a href="#" class="text-decoration-none">Azure Cost Management</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>GCP Resources</h6>
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="text-decoration-none">Google Cloud Architecture Framework</a></li>
+                            <li><a href="#" class="text-decoration-none">GCP Security Best Practices</a></li>
+                            <li><a href="#" class="text-decoration-none">GCP Cost Optimization</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function loadRecommendations(useCase) {
+    const recommendationsDiv = document.getElementById('recommendationsDiv');
+    const recommendationsTitle = document.getElementById('recommendationsTitle');
+    const recommendationsContent = document.getElementById('recommendationsContent');
+    
+    recommendationsTitle.textContent = `Recommendations for ${useCase.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+    recommendationsContent.innerHTML = '<div class="col-12 text-center"><div class="spinner-border" role="status"></div></div>';
+    recommendationsDiv.style.display = 'block';
+    
+    fetch(`/recommendations/${useCase}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                recommendationsContent.innerHTML = `<div class="col-12"><div class="alert alert-danger">${data.error}</div></div>`;
+                return;
+            }
+            
+            let html = '';
+            
+            // AWS recommendations
+            if (data.aws && data.aws.length > 0) {
+                html += `
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fab fa-aws text-warning"></i> AWS</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    ${data.aws.map(rec => `<li><i class="fas fa-check text-success me-2"></i>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Azure recommendations
+            if (data.azure && data.azure.length > 0) {
+                html += `
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fab fa-microsoft text-primary"></i> Azure</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    ${data.azure.map(rec => `<li><i class="fas fa-check text-success me-2"></i>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // GCP recommendations
+            if (data.gcp && data.gcp.length > 0) {
+                html += `
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h6><i class="fab fa-google text-danger"></i> GCP</h6>
+                            </div>
+                            <div class="card-body">
+                                <ul class="list-unstyled">
+                                    ${data.gcp.map(rec => `<li><i class="fas fa-check text-success me-2"></i>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            recommendationsContent.innerHTML = html;
+        })
+        .catch(error => {
+            recommendationsContent.innerHTML = `<div class="col-12"><div class="alert alert-danger">Failed to load recommendations: ${error.message}</div></div>`;
+        });
+}
+</script>
+{% endblock %}

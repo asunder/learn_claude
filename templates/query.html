@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Query Agent - Ask Questions{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-question-circle"></i> Ask the Hypervisor Agent</h4>
+                <p class="mb-0">Get instant help with cloud infrastructure, hypervisors, and Infrastructure as Code.</p>
+            </div>
+            <div class="card-body">
+                <form id="queryForm">
+                    <div class="mb-3">
+                        <label for="query" class="form-label">Your Question</label>
+                        <textarea class="form-control" id="query" name="query" rows="3" 
+                                placeholder="e.g., How do I create a Terraform configuration for AWS EC2?" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="provider" class="form-label">Cloud Provider (Optional)</label>
+                        <select class="form-select" id="provider" name="provider">
+                            <option value="auto">Auto-detect</option>
+                            <option value="aws">AWS</option>
+                            <option value="azure">Azure</option>
+                            <option value="gcp">Google Cloud Platform</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-search"></i> Ask Agent
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <div id="loadingDiv" class="text-center mt-4" style="display: none;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Agent is thinking...</p>
+        </div>
+        
+        <div id="resultsDiv" class="mt-4" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb"></i> Agent Response</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Query:</strong> <span id="resultQuery"></span>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Provider:</strong> 
+                        <span id="resultProvider" class="badge bg-primary"></span>
+                    </div>
+                    
+                    <div id="recommendationsSection" class="mb-4">
+                        <h6><i class="fas fa-star"></i> Recommendations</h6>
+                        <ul id="recommendationsList" class="list-group">
+                        </ul>
+                    </div>
+                    
+                    <div id="codeSection" class="mb-4">
+                        <h6><i class="fas fa-code"></i> Code Examples</h6>
+                        <div id="codeExamples">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="errorDiv" class="alert alert-danger mt-4" style="display: none;">
+            <h6><i class="fas fa-exclamation-triangle"></i> Error</h6>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5>Example Questions to Try:</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="example-query">How do I create an AWS Lambda function?</a></li>
+                            <li><a href="#" class="example-query">Generate Terraform for Azure VM</a></li>
+                            <li><a href="#" class="example-query">GCP Kubernetes cluster setup</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="example-query">Best practices for cloud security</a></li>
+                            <li><a href="#" class="example-query">How to optimize cloud costs?</a></li>
+                            <li><a href="#" class="example-query">VMware vSphere automation</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <ul class="list-unstyled">
+                            <li><a href="#" class="example-query">Container orchestration with Docker</a></li>
+                            <li><a href="#" class="example-query">Infrastructure as Code patterns</a></li>
+                            <li><a href="#" class="example-query">Cloud migration strategies</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('queryForm');
+    const loadingDiv = document.getElementById('loadingDiv');
+    const resultsDiv = document.getElementById('resultsDiv');
+    const errorDiv = document.getElementById('errorDiv');
+    
+    // Handle example queries
+    document.querySelectorAll('.example-query').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('query').value = this.textContent;
+        });
+    });
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        
+        // Show loading, hide results and errors
+        loadingDiv.style.display = 'block';
+        resultsDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
+        
+        fetch('/query', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            loadingDiv.style.display = 'none';
+            
+            if (data.error) {
+                document.getElementById('errorMessage').textContent = data.error;
+                errorDiv.style.display = 'block';
+            } else {
+                // Display results
+                document.getElementById('resultQuery').textContent = data.query;
+                document.getElementById('resultProvider').textContent = data.provider;
+                
+                // Recommendations
+                const recList = document.getElementById('recommendationsList');
+                recList.innerHTML = '';
+                data.recommendations.forEach(rec => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+                    li.textContent = rec;
+                    recList.appendChild(li);
+                });
+                
+                // Code examples
+                const codeDiv = document.getElementById('codeExamples');
+                codeDiv.innerHTML = '';
+                data.code_examples.forEach((code, index) => {
+                    const pre = document.createElement('pre');
+                    const codeEl = document.createElement('code');
+                    codeEl.className = 'language-hcl';
+                    codeEl.textContent = code;
+                    pre.appendChild(codeEl);
+                    codeDiv.appendChild(pre);
+                });
+                
+                // Re-highlight code
+                if (typeof Prism !== 'undefined') {
+                    Prism.highlightAll();
+                }
+                
+                resultsDiv.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            loadingDiv.style.display = 'none';
+            document.getElementById('errorMessage').textContent = 'Request failed: ' + error.message;
+            errorDiv.style.display = 'block';
+        });
+    });
+});
+</script>
+{% endblock %}
