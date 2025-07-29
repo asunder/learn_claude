@@ -156,6 +156,45 @@ resource "google_compute_instance" "example" {
 }
 ```
 
+## Web Interface
+
+The project includes a Flask web application that provides an interactive interface to the hypervisor agent.
+
+### Running the Web Application Locally
+
+1. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+2. **Start the Flask development server:**
+   ```bash
+   python app.py
+   ```
+
+3. **Access the application:**
+   Open your browser and navigate to `http://localhost:5000`
+
+### Web Interface Features
+
+- **Interactive Query System**: Ask questions about cloud infrastructure and get code examples
+- **Multi-Cloud Support**: Switch between AWS, Azure, GCP, or auto-detect mode
+- **Code Generation**: Get Terraform configurations, SDK examples, and CLI commands
+- **Best Practices**: View security, performance, cost optimization, and reliability guidelines
+- **Template Library**: Browse pre-built templates for common infrastructure patterns
+
+### Available Web Pages
+
+- `/` - Home page with overview and navigation
+- `/query` - Interactive query interface for asking questions
+- `/aws` - AWS-specific helpers and examples
+- `/azure` - Azure-specific helpers and examples  
+- `/gcp` - Google Cloud Platform helpers and examples
+- `/hypervisors` - Hypervisor-specific guidance (VMware, Hyper-V, KVM)
+- `/best_practices` - Cloud infrastructure best practices
+- `/sdk_examples` - SDK code examples for all cloud providers
+- `/terraform` - Terraform configuration templates
+
 ## Testing
 
 Run the simple test to verify functionality:
